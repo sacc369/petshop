@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tarjeta Navideña Personalizable</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            background-color: #f8f8f8;
+        }
+        .card {
+            width: 600px;
+            height: 400px;
+            margin: 20px auto;
+            position: relative;
+            border: 5px solid #d32f2f;
+            background: url('https://i.ibb.co/GJQfCcV/Tarjeta-feliz-navidad-emotivo-bonito-blanco-Postales-1-11zon.jpg') no-repeat center;
+            background-size: cover;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+        .text-overlay {
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            color: white;
+            font-size: 24px;
+            text-shadow: 2px 2px 5px rgba(0, 0, 0, 0.7);
+        }
+        .pet-photo {
+            position: absolute;
+            top: 45%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 200px;
+            height: 200px;
+            border-radius: 50%;
+            overflow: hidden;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            border: 5px solid white;
+        }
+        .pet-photo img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        input[type="file"], input[type="text"], button {
+            margin: 10px;
+            padding: 10px;
+            font-size: 16px;
+        }
+        button {
+            background-color: #d32f2f;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #b71c1c;
+        }
+    </style>
+</head>
+<body>
+    <h1>Crea tu Tarjeta Personalizada</h1>
+    <div class="card" id="card">
+        <div class="pet-photo" id="petPhoto">
+            <img id="petImage" src="" alt="Foto personalizada">
+        </div>
+        <div class="text-overlay" id="overlay">Para, [Tu Nombre]</div>
+    </div>
+    <div>
+        <input type="text" id="nameInput" placeholder="Escribe tu nombre">
+        <button onclick="updateCard()">Actualizar Tarjeta</button>
+        <button onclick="downloadCard()">Descargar Tarjeta</button>
+        <input type="file" id="photoInput" accept="image/*" onchange="updatePetPhoto()">
+    </div>
+
+    <script>
+        const card = document.getElementById('card');
+        const overlay = document.getElementById('overlay');
+        const petImage = document.getElementById('petImage');
+
+        let backgroundImage = new Image();
+        backgroundImage.crossOrigin = "Anonymous";
+        backgroundImage.src = 'https://i.ibb.co/GJQfCcV/Tarjeta-feliz-navidad-emotivo-bonito-blanco-Postales-1-11zon.jpg';
+        let petImageLoaded = false;
+
+        function updateCard() {
+            const name = document.getElementById('nameInput').value.trim();
+            overlay.textContent = name ? `Para, ${name}` : 'Para, [Tu Nombre]';
+        }
+
+        function updatePetPhoto() {
+            const photoInput = document.getElementById('photoInput');
+            const file = photoInput.files[0];
+
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function (e) {
+                    petImage.src = e.target.result;
+                    petImage.onload = () => petImageLoaded = true;
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+
+        function downloadCard() {
+            const canvas = document.createElement('canvas');
+            const ctx = canvas.getContext('2d');
+            canvas.width = 600;
+            canvas.height = 400;
+
+            backgroundImage.onload = function () {
+                ctx.drawImage(backgroundImage, 0, 0, canvas.width, canvas.height);
+
+                if (petImageLoaded) {
+                    const petX = 200;
+                    const petY = 80;
+                    const petWidth = 200;
+                    const petHeight = 200;
+
+                    ctx.save();
+                    ctx.beginPath();
+                    ctx.arc(petX + petWidth / 2, petY + petHeight / 2, petWidth / 2, 0, 2 * Math.PI);
+                    ctx.clip();
+                    ctx.drawImage(petImage, petX, petY, petWidth, petHeight);
+                    ctx.restore();
+                }
+
+                ctx.font = '24px Arial';
+                ctx.fillStyle = 'white';
+                ctx.textAlign = 'left';
+                ctx.shadowColor = 'rgba(0, 0, 0, 0.7)';
+                ctx.shadowBlur = 5;
+                ctx.fillText(overlay.textContent, 20, canvas.height - 20);
+
+                const link = document.createElement('a');
+                link.download = 'tarjeta_personalizada.jpg';
+                link.href = canvas.toDataURL('image/jpeg');
+                link.target = '_blank'; // Abrir en nueva pestaña para navegadores móviles
+                link.click();
+            };
+            backgroundImage.src = backgroundImage.src;
+        }
+    </script>
+</body>
+</html>
